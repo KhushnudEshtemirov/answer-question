@@ -15,11 +15,15 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
-import { useQuery } from "react-query";
-import axios from "axios";
+import { useMutation, useQuery } from "react-query";
 import { toast } from "react-toastify";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import Swal from "sweetalert2";
 
 import "./index.scss";
+import { API } from "../../services/api";
+import EditAnswer from "../../components/editAnswer/EditAnswer";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -42,13 +46,51 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const HomePage = () => {
   const [open, setOpen] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [activePage, setActivePage] = useState(0);
   const [page, setPage] = useState(1);
   const [postData, setPostData] = useState({ answer: "", question: "" });
 
-  const { isLoading, isError, data } = useQuery(
+  const { isLoading, data, refetch } = useQuery(
     "getAnswers",
-    async () => await axios.get("https://jsonplaceholder.typicode.com/posts")
+    async () => await API.getAllQuestions()
+  );
+
+  const { mutate } = useMutation(async (data) => await API.postAnswer(data), {
+    onSuccess: () => {
+      refetch();
+      toast.success("Savolingiz muvaffaqiyatli qo'shildi.");
+    },
+    onError: () => {
+      toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+    },
+  });
+
+  const { mutate: updateMutate } = useMutation(
+    async (data) => await API.updateAnswer(data),
+    {
+      onSuccess: () => {
+        refetch();
+        toast.success("Savol muvaffaqiyatli yangilandi.");
+      },
+      onError: () => {
+        toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+      },
+    }
+  );
+
+  const { mutate: deleteMutate } = useMutation(
+    async (id) => await API.deleteAnswer(id),
+    {
+      onSuccess: () => {
+        refetch();
+        toast.success("Savol muvaffaqiyatli o'chirildi.");
+      },
+      onError: () => {
+        toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+      },
+    }
   );
 
   const handleClickOpen = () => {
@@ -57,12 +99,12 @@ const HomePage = () => {
 
   const handleClose = () => {
     setOpen(false);
+    setOpenEdit(false);
   };
 
   const handleSubmit = () => {
-    console.log(postData);
+    mutate(postData);
     setOpen(false);
-    toast.success("Savolingiz qo'shildi");
   };
 
   const handleChange = (event, value) => {
@@ -70,11 +112,32 @@ const HomePage = () => {
     setActivePage(value - 1);
   };
 
+  const handleEditOpen = (id) => {
+    setEditId(id);
+    setOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    Swal.fire({
+      title: "Ushbu savolni o'chirishga ishonchingiz komilmi?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ha",
+      cancelButtonText: "Yo'q",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutate(id);
+      }
+    });
+  };
+
   if (isLoading) {
-    return <h1>Loading...</h1>;
+    return <p>Loading...</p>;
   }
 
-  const allData = data.data;
+  const allData = data.data.results;
 
   const paginationCount = Math.ceil(allData.length / 10);
 
@@ -163,18 +226,42 @@ const HomePage = () => {
                 <StyledTableCell>T/R</StyledTableCell>
                 <StyledTableCell>Savol</StyledTableCell>
                 <StyledTableCell>Javob</StyledTableCell>
+                <StyledTableCell sx={{ width: "60px" }}>
+                  Amallar
+                </StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {allData
                 .slice(10 * activePage, 10 * activePage + 10)
-                .map((answer, index) => (
+                .map((item, index) => (
                   <StyledTableRow key={index}>
                     <StyledTableCell component="th" scope="row">
-                      {answer.id}
+                      {item.id}
                     </StyledTableCell>
-                    <StyledTableCell>{answer.title}</StyledTableCell>
-                    <StyledTableCell>{answer.body}</StyledTableCell>
+                    <StyledTableCell>{item.question}</StyledTableCell>
+                    <StyledTableCell>{item.answer}</StyledTableCell>
+                    <StyledTableCell>
+                      <EditIcon
+                        onClick={() => handleEditOpen(item.id)}
+                        sx={{
+                          fill: "blue",
+                          cursor: "pointer",
+                          marginRight: "10px",
+                        }}
+                      />
+                      <DeleteIcon
+                        onClick={() => handleDelete(item.id)}
+                        sx={{ fill: "red", cursor: "pointer" }}
+                      />
+                      {open && (
+                        <EditAnswer
+                          open={open}
+                          id={item.id}
+                          handleClose={handleClose}
+                        />
+                      )}
+                    </StyledTableCell>
                   </StyledTableRow>
                 ))}
             </TableBody>
