@@ -1,0 +1,30 @@
+.home {
+  padding: 40px;
+
+  &__table {
+    margin: 30px 0;
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  &__pagination {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media(max-width: 500px) {
+  .home {
+    &__search {
+      flex-direction: column;
+
+      .MuiAutocomplete-root {
+        width: 100%;
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, Grid, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -8,17 +8,18 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Pagination from "@mui/material/Pagination";
-import PaginationItem from "@mui/material/PaginationItem";
 import Stack from "@mui/material/Stack";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
+import { useQuery } from "react-query";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+import "./index.scss";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -34,26 +35,21 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
-
 const HomePage = () => {
   const [open, setOpen] = useState(false);
+  const [activePage, setActivePage] = useState(0);
+  const [page, setPage] = useState(1);
+  const [postData, setPostData] = useState({ answer: "", question: "" });
+
+  const { isLoading, isError, data } = useQuery(
+    "getAnswers",
+    async () => await axios.get("https://jsonplaceholder.typicode.com/posts")
+  );
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -63,80 +59,141 @@ const HomePage = () => {
     setOpen(false);
   };
 
+  const handleSubmit = () => {
+    console.log(postData);
+    setOpen(false);
+    toast.success("Savolingiz qo'shildi");
+  };
+
+  const handleChange = (event, value) => {
+    setPage(value);
+    setActivePage(value - 1);
+  };
+
+  if (isLoading) {
+    return <h1>Loading...</h1>;
+  }
+
+  const allData = data.data;
+
+  const paginationCount = Math.ceil(allData.length / 10);
+
   return (
-    <>
-      <Autocomplete
-        disablePortal
-        id="combo-box-demo"
-        options={top100Films}
-        sx={{ width: 300 }}
-        renderInput={(params) => <TextField {...params} label="Movie" />}
-      />
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>Dessert (100g serving)</StyledTableCell>
-              <StyledTableCell align="right">Calories</StyledTableCell>
-              <StyledTableCell align="right">Fat&nbsp;(g)</StyledTableCell>
-              <StyledTableCell align="right">Carbs&nbsp;(g)</StyledTableCell>
-              <StyledTableCell align="right">Protein&nbsp;(g)</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <StyledTableRow key={row.name}>
-                <StyledTableCell component="th" scope="row">
-                  {row.name}
-                </StyledTableCell>
-                <StyledTableCell align="right">{row.calories}</StyledTableCell>
-                <StyledTableCell align="right">{row.fat}</StyledTableCell>
-                <StyledTableCell align="right">{row.carbs}</StyledTableCell>
-                <StyledTableCell align="right">{row.protein}</StyledTableCell>
-              </StyledTableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Stack spacing={2}>
-        <Pagination
-          count={10}
-          renderItem={(item) => (
-            <PaginationItem
-              slots={{ previous: ArrowBackIcon, next: ArrowForwardIcon }}
-              {...item}
-            />
+    <div className="home">
+      <div className="home__search">
+        <Autocomplete
+          disablePortal
+          id="combo-box-demo"
+          options={top100Films}
+          sx={{ width: "50%" }}
+          renderInput={(params) => (
+            <TextField {...params} label="Savolni yozing" />
           )}
         />
-      </Stack>
-      <div>
-        <Button variant="outlined" onClick={handleClickOpen}>
-          Open form dialog
-        </Button>
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Subscribe</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              To subscribe to this website, please enter your email address
-              here. We will send updates occasionally.
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Email Address"
-              type="email"
-              fullWidth
-              variant="standard"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleClose}>Subscribe</Button>
-          </DialogActions>
-        </Dialog>
+        <div className="home__modal">
+          <Button variant="contained" color="success" onClick={handleClickOpen}>
+            Savol qo'shish
+          </Button>
+          <Dialog open={open} onClose={handleClose}>
+            <DialogTitle>Savol qo'shish</DialogTitle>
+            <DialogContent
+              sx={{
+                height: "160px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: "30px",
+              }}
+            >
+              <Grid container spacing={4}>
+                <Grid item xs={12}>
+                  <TextField
+                    sx={{ width: "100%" }}
+                    id="outlined-basic"
+                    label="Savolni kiriting"
+                    variant="outlined"
+                    onChange={(e) =>
+                      setPostData((prev) => ({
+                        ...prev,
+                        question: e.target.value,
+                      }))
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    sx={{ width: "100%" }}
+                    id="outlined-basic"
+                    label="Javobni kiriting"
+                    variant="outlined"
+                    onChange={(e) =>
+                      setPostData((prev) => ({
+                        ...prev,
+                        answer: e.target.value,
+                      }))
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ paddingBottom: "20px", paddingRight: "20px" }}>
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                sx={
+                  postData.answer.length > 0 && postData.question.length > 0
+                    ? null
+                    : { pointerEvents: "none", opacity: "0.5" }
+                }
+              >
+                Qo'shish
+              </Button>
+              <Button onClick={handleClose} variant="contained" color="error">
+                Bekor qilish
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
       </div>
-    </>
+      <div className="home__table">
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 700 }} aria-label="customized table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>T/R</StyledTableCell>
+                <StyledTableCell>Savol</StyledTableCell>
+                <StyledTableCell>Javob</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {allData
+                .slice(10 * activePage, 10 * activePage + 10)
+                .map((answer, index) => (
+                  <StyledTableRow key={index}>
+                    <StyledTableCell component="th" scope="row">
+                      {answer.id}
+                    </StyledTableCell>
+                    <StyledTableCell>{answer.title}</StyledTableCell>
+                    <StyledTableCell>{answer.body}</StyledTableCell>
+                  </StyledTableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
+      {paginationCount > 1 ? (
+        <div className="home__pagination">
+          <Stack spacing={2}>
+            <Pagination
+              count={paginationCount}
+              size="large"
+              page={page}
+              onChange={handleChange}
+            />
+          </Stack>
+        </div>
+      ) : null}
+    </div>
   );
 };
 
