@@ -11,13 +11,13 @@ export const customAxios = axios.create({
 
 export const API = {
   // Get requests
-  getAllQuestions: () => customAxios.get("/"),
-  getOneQuestion: (payload) => customAxios.get(`/${payload.queryKey[1]}/`),
+  getAllQuestions: (payload) => customAxios.get(`/?page=${payload}`),
+
   // Post requests
   postAnswer: (payload) => customAxios.post("/", payload),
 
   // Updated requests
-  updateAnswer: (payload) => customAxios.put(`/${payload}`),
+  updateAnswer: (payload) => customAxios.put(`/${payload.id}/`, payload),
 
   // Delete requests
   deleteAnswer: (payload) => customAxios.delete(`/${payload}/`),

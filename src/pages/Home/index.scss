@@ -17,7 +17,11 @@
   }
 }
 
-@media(max-width: 500px) {
+.loading {
+  text-align: center;
+}
+
+@media (max-width: 500px) {
   .home {
     &__search {
       flex-direction: column;

@@ -1,4 +1,4 @@
-import { Autocomplete, Grid, TextField } from "@mui/material";
+import { Autocomplete, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -10,10 +10,6 @@ import Paper from "@mui/material/Paper";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { toast } from "react-toastify";
@@ -24,6 +20,7 @@ import Swal from "sweetalert2";
 import "./index.scss";
 import { API } from "../../services/api";
 import EditAnswer from "../../components/editAnswer/EditAnswer";
+import AddAnswer from "../../components/addAnswer/AddAnswer";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -47,37 +44,12 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const HomePage = () => {
   const [open, setOpen] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [activePage, setActivePage] = useState(0);
+  const [editData, setEditData] = useState(undefined);
   const [page, setPage] = useState(1);
-  const [postData, setPostData] = useState({ answer: "", question: "" });
 
   const { isLoading, data, refetch } = useQuery(
-    "getAnswers",
-    async () => await API.getAllQuestions()
-  );
-
-  const { mutate } = useMutation(async (data) => await API.postAnswer(data), {
-    onSuccess: () => {
-      refetch();
-      toast.success("Savolingiz muvaffaqiyatli qo'shildi.");
-    },
-    onError: () => {
-      toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
-    },
-  });
-
-  const { mutate: updateMutate } = useMutation(
-    async (data) => await API.updateAnswer(data),
-    {
-      onSuccess: () => {
-        refetch();
-        toast.success("Savol muvaffaqiyatli yangilandi.");
-      },
-      onError: () => {
-        toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
-      },
-    }
+    ["getAnswers", page],
+    async () => await API.getAllQuestions(page)
   );
 
   const { mutate: deleteMutate } = useMutation(
@@ -102,19 +74,8 @@ const HomePage = () => {
     setOpenEdit(false);
   };
 
-  const handleSubmit = () => {
-    mutate(postData);
-    setOpen(false);
-  };
-
   const handleChange = (event, value) => {
     setPage(value);
-    setActivePage(value - 1);
-  };
-
-  const handleEditOpen = (id) => {
-    setEditId(id);
-    setOpen(true);
   };
 
   const handleDelete = (id) => {
@@ -134,12 +95,17 @@ const HomePage = () => {
   };
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <p className="loading">Loading...</p>;
   }
 
   const allData = data.data.results;
 
-  const paginationCount = Math.ceil(allData.length / 10);
+  const paginationCount = Math.ceil(data.data.count / 10);
+
+  const handleEditOpen = (id) => {
+    setEditData(allData.find((item) => item.id === parseInt(id)));
+    setOpenEdit(true);
+  };
 
   return (
     <div className="home">
@@ -157,65 +123,20 @@ const HomePage = () => {
           <Button variant="contained" color="success" onClick={handleClickOpen}>
             Savol qo'shish
           </Button>
-          <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>Savol qo'shish</DialogTitle>
-            <DialogContent
-              sx={{
-                height: "160px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                gap: "30px",
-              }}
-            >
-              <Grid container spacing={4}>
-                <Grid item xs={12}>
-                  <TextField
-                    sx={{ width: "100%" }}
-                    id="outlined-basic"
-                    label="Savolni kiriting"
-                    variant="outlined"
-                    onChange={(e) =>
-                      setPostData((prev) => ({
-                        ...prev,
-                        question: e.target.value,
-                      }))
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    sx={{ width: "100%" }}
-                    id="outlined-basic"
-                    label="Javobni kiriting"
-                    variant="outlined"
-                    onChange={(e) =>
-                      setPostData((prev) => ({
-                        ...prev,
-                        answer: e.target.value,
-                      }))
-                    }
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions sx={{ paddingBottom: "20px", paddingRight: "20px" }}>
-              <Button
-                onClick={handleSubmit}
-                variant="contained"
-                sx={
-                  postData.answer.length > 0 && postData.question.length > 0
-                    ? null
-                    : { pointerEvents: "none", opacity: "0.5" }
-                }
-              >
-                Qo'shish
-              </Button>
-              <Button onClick={handleClose} variant="contained" color="error">
-                Bekor qilish
-              </Button>
-            </DialogActions>
-          </Dialog>
+          <AddAnswer
+            handleClose={handleClose}
+            refetch={refetch}
+            open={open}
+            setOpen={setOpen}
+          />
+          {openEdit && (
+            <EditAnswer
+              open={openEdit}
+              data={editData}
+              handleClose={handleClose}
+              refetch={refetch}
+            />
+          )}
         </div>
       </div>
       <div className="home__table">
@@ -223,7 +144,6 @@ const HomePage = () => {
           <Table sx={{ minWidth: 700 }} aria-label="customized table">
             <TableHead>
               <TableRow>
-                <StyledTableCell>T/R</StyledTableCell>
                 <StyledTableCell>Savol</StyledTableCell>
                 <StyledTableCell>Javob</StyledTableCell>
                 <StyledTableCell sx={{ width: "60px" }}>
@@ -232,38 +152,26 @@ const HomePage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {allData
-                .slice(10 * activePage, 10 * activePage + 10)
-                .map((item, index) => (
-                  <StyledTableRow key={index}>
-                    <StyledTableCell component="th" scope="row">
-                      {item.id}
-                    </StyledTableCell>
-                    <StyledTableCell>{item.question}</StyledTableCell>
-                    <StyledTableCell>{item.answer}</StyledTableCell>
-                    <StyledTableCell>
-                      <EditIcon
-                        onClick={() => handleEditOpen(item.id)}
-                        sx={{
-                          fill: "blue",
-                          cursor: "pointer",
-                          marginRight: "10px",
-                        }}
-                      />
-                      <DeleteIcon
-                        onClick={() => handleDelete(item.id)}
-                        sx={{ fill: "red", cursor: "pointer" }}
-                      />
-                      {open && (
-                        <EditAnswer
-                          open={open}
-                          id={item.id}
-                          handleClose={handleClose}
-                        />
-                      )}
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
+              {allData.map((item, index) => (
+                <StyledTableRow key={index}>
+                  <StyledTableCell>{item.question}</StyledTableCell>
+                  <StyledTableCell>{item.answer}</StyledTableCell>
+                  <StyledTableCell>
+                    <EditIcon
+                      onClick={() => handleEditOpen(item.id)}
+                      sx={{
+                        fill: "blue",
+                        cursor: "pointer",
+                        marginRight: "10px",
+                      }}
+                    />
+                    <DeleteIcon
+                      onClick={() => handleDelete(item.id)}
+                      sx={{ fill: "red", cursor: "pointer" }}
+                    />
+                  </StyledTableCell>
+                </StyledTableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

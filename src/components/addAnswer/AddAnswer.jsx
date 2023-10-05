@@ -1,3 +1,7 @@
+import { useMutation } from "react-query";
+import { API } from "../../services/api";
+import { useState } from "react";
+import { toast } from "react-toastify";
 import {
   Button,
   Dialog,
@@ -7,22 +11,14 @@ import {
   Grid,
   TextField,
 } from "@mui/material";
-import { useState } from "react";
-import { useMutation } from "react-query";
-import { API } from "../../services/api";
-import { toast } from "react-toastify";
 
-const EditAnswer = ({ open, data, handleClose, refetch }) => {
-  const [editData, setEditData] = useState({
-    id: data?.id,
-    answer: data?.answer,
-    question: data?.question,
-  });
+const AddAnswer = ({ handleClose, refetch, open, setOpen }) => {
+  const [postData, setPostData] = useState({ answer: "", question: "" });
 
-  const { mutate } = useMutation(async (data) => await API.updateAnswer(data), {
+  const { mutate } = useMutation(async (data) => await API.postAnswer(data), {
     onSuccess: () => {
       refetch();
-      toast.success("Savol muvaffaqiyatli yangilandi.");
+      toast.success("Savolingiz muvaffaqiyatli qo'shildi.");
     },
     onError: () => {
       toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
@@ -30,13 +26,13 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
   });
 
   const handleSubmit = () => {
-    mutate(editData);
-    handleClose();
+    mutate(postData);
+    setOpen(false);
   };
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Savolni o'zgartirish</DialogTitle>
+      <DialogTitle>Savol qo'shish</DialogTitle>
       <DialogContent
         sx={{
           height: "160px",
@@ -53,9 +49,8 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
               id="outlined-basic"
               label="Savolni kiriting"
               variant="outlined"
-              value={editData?.question}
               onChange={(e) =>
-                setEditData((prev) => ({
+                setPostData((prev) => ({
                   ...prev,
                   question: e.target.value,
                 }))
@@ -68,9 +63,8 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
               id="outlined-basic"
               label="Javobni kiriting"
               variant="outlined"
-              value={editData?.answer}
               onChange={(e) =>
-                setEditData((prev) => ({
+                setPostData((prev) => ({
                   ...prev,
                   answer: e.target.value,
                 }))
@@ -84,12 +78,12 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
           onClick={handleSubmit}
           variant="contained"
           sx={
-            editData?.answer?.length > 0 && editData?.question?.length > 0
+            postData.answer.length > 0 && postData.question.length > 0
               ? null
               : { pointerEvents: "none", opacity: "0.5" }
           }
         >
-          Yangilash
+          Qo'shish
         </Button>
         <Button onClick={handleClose} variant="contained" color="error">
           Bekor qilish
@@ -99,4 +93,4 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
   );
 };
 
-export default EditAnswer;
+export default AddAnswer;
