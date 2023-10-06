@@ -46,6 +46,7 @@ const HomePage = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [editData, setEditData] = useState(undefined);
   const [page, setPage] = useState(1);
+  const [question, setQuestion] = useState("");
 
   const { isLoading, data, refetch } = useQuery(
     ["getAnswers", page],
@@ -116,19 +117,27 @@ const HomePage = () => {
           options={top100Films}
           sx={{ width: "50%" }}
           renderInput={(params) => (
-            <TextField {...params} label="Savolni yozing" />
+            <TextField
+              {...params}
+              label="Savolni yozing"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+            />
           )}
         />
         <div className="home__modal">
           <Button variant="contained" color="success" onClick={handleClickOpen}>
             Savol qo'shish
           </Button>
-          <AddAnswer
-            handleClose={handleClose}
-            refetch={refetch}
-            open={open}
-            setOpen={setOpen}
-          />
+          {open && (
+            <AddAnswer
+              handleClose={handleClose}
+              refetch={refetch}
+              open={open}
+              setOpen={setOpen}
+              question={question}
+            />
+          )}
           {openEdit && (
             <EditAnswer
               open={openEdit}

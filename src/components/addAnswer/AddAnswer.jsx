@@ -12,8 +12,8 @@ import {
   TextField,
 } from "@mui/material";
 
-const AddAnswer = ({ handleClose, refetch, open, setOpen }) => {
-  const [postData, setPostData] = useState({ answer: "", question: "" });
+const AddAnswer = ({ handleClose, refetch, open, setOpen, question }) => {
+  const [postData, setPostData] = useState({ question: question, answer: "" });
 
   const { mutate } = useMutation(async (data) => await API.postAnswer(data), {
     onSuccess: () => {
@@ -49,6 +49,7 @@ const AddAnswer = ({ handleClose, refetch, open, setOpen }) => {
               id="outlined-basic"
               label="Savolni kiriting"
               variant="outlined"
+              value={postData.question}
               onChange={(e) =>
                 setPostData((prev) => ({
                   ...prev,
