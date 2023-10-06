@@ -69,6 +69,8 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
               label="Javobni kiriting"
               variant="outlined"
               value={editData?.answer}
+              multiline
+              rows={4}
               onChange={(e) =>
                 setEditData((prev) => ({
                   ...prev,

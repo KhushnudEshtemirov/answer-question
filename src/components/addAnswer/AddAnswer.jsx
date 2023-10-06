@@ -64,6 +64,8 @@ const AddAnswer = ({ handleClose, refetch, open, setOpen, question }) => {
               id="outlined-basic"
               label="Javobni kiriting"
               variant="outlined"
+              multiline
+              rows={4}
               onChange={(e) =>
                 setPostData((prev) => ({
                   ...prev,
