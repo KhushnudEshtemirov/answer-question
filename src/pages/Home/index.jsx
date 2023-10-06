@@ -161,26 +161,34 @@ const HomePage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {allData.map((item, index) => (
-                <StyledTableRow key={index}>
-                  <StyledTableCell>{item.question}</StyledTableCell>
-                  <StyledTableCell>{item.answer}</StyledTableCell>
-                  <StyledTableCell>
-                    <EditIcon
-                      onClick={() => handleEditOpen(item.id)}
-                      sx={{
-                        fill: "blue",
-                        cursor: "pointer",
-                        marginRight: "10px",
-                      }}
-                    />
-                    <DeleteIcon
-                      onClick={() => handleDelete(item.id)}
-                      sx={{ fill: "red", cursor: "pointer" }}
-                    />
+              {allData.length > 0 ? (
+                allData.map((item, index) => (
+                  <StyledTableRow key={index}>
+                    <StyledTableCell>{item.question}</StyledTableCell>
+                    <StyledTableCell>{item.answer}</StyledTableCell>
+                    <StyledTableCell>
+                      <EditIcon
+                        onClick={() => handleEditOpen(item.id)}
+                        sx={{
+                          fill: "blue",
+                          cursor: "pointer",
+                          marginRight: "10px",
+                        }}
+                      />
+                      <DeleteIcon
+                        onClick={() => handleDelete(item.id)}
+                        sx={{ fill: "red", cursor: "pointer" }}
+                      />
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))
+              ) : (
+                <StyledTableRow>
+                  <StyledTableCell colSpan={3} sx={{ textAlign: "center" }}>
+                    Hozircha savollar mavjud emas.
                   </StyledTableCell>
                 </StyledTableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
