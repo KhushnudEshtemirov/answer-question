@@ -15,6 +15,7 @@ export const API = {
 
   // Post requests
   postAnswer: (payload) => customAxios.post("/", payload),
+  searchQuestion: (payload) => customAxios.get(`?search=${payload}`),
 
   // Updated requests
   updateAnswer: (payload) => customAxios.put(`/${payload.id}/`, payload),
