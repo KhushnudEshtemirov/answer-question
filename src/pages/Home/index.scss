@@ -14,7 +14,13 @@
   &__pagination {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
   }
+}
+
+.MuiDialogContent-root {
+  padding-top: 10px !important;
 }
 
 .loading {
@@ -29,6 +35,10 @@
       .MuiAutocomplete-root {
         width: 100%;
       }
+    }
+
+    &__pagination {
+      flex-direction: column;
     }
   }
 }

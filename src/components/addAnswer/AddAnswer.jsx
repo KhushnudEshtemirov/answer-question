@@ -35,7 +35,6 @@ const AddAnswer = ({ handleClose, refetch, open, setOpen, question }) => {
       <DialogTitle>Savol qo'shish</DialogTitle>
       <DialogContent
         sx={{
-          height: "160px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",

@@ -147,7 +147,6 @@ const HomePage = () => {
               label="Savolni yozing"
               value={question}
               onChange={(e) => handleSearch(e.target.value)}
-              // onClick={() => handleSearch("")}
             />
           )}
         />
@@ -221,6 +220,13 @@ const HomePage = () => {
       </div>
       {paginationCount > 1 ? (
         <div className="home__pagination">
+          <p>
+            {10 * (page - 1) + 1} -{" "}
+            {10 * (page - 1) + 10 < data.data.count
+              ? 10 * (page - 1) + 10
+              : data.data.count}{" "}
+            dan {data.data.count}
+          </p>
           <Stack spacing={2}>
             <Pagination
               count={paginationCount}

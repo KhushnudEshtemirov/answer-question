@@ -39,7 +39,6 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
       <DialogTitle>Savolni o'zgartirish</DialogTitle>
       <DialogContent
         sx={{
-          height: "160px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
