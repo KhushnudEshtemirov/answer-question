@@ -49,9 +49,11 @@ const HomePage = () => {
   const [question, setQuestion] = useState("");
   const [searchData, setSearchData] = useState([]);
 
+  const page_size = 10; // page_size is number of items in every request
+
   const { isLoading, data, refetch } = useQuery(
-    ["getAnswers", page],
-    async () => await API.getAllQuestions(page)
+    ["getAnswers", page, page_size],
+    async () => await API.getAllQuestions({ page, page_size })
   );
 
   const { mutate: searchMutate } = useMutation(
@@ -126,7 +128,7 @@ const HomePage = () => {
 
   const allData = data.data.results;
 
-  const paginationCount = Math.ceil(data.data.count / 10);
+  const paginationCount = Math.ceil(data.data.count / page_size);
 
   const handleEditOpen = (id) => {
     setEditData(allData.find((item) => item.id === parseInt(id)));
@@ -221,9 +223,9 @@ const HomePage = () => {
       {paginationCount > 1 ? (
         <div className="home__pagination">
           <p>
-            {10 * (page - 1) + 1} -{" "}
-            {10 * (page - 1) + 10 < data.data.count
-              ? 10 * (page - 1) + 10
+            {page_size * (page - 1) + 1} -{" "}
+            {page_size * page < data.data.count
+              ? page_size * page
               : data.data.count}{" "}
             dan {data.data.count}
           </p>

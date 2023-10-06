@@ -11,7 +11,8 @@ export const customAxios = axios.create({
 
 export const API = {
   // Get requests
-  getAllQuestions: (payload) => customAxios.get(`/?page=${payload}`),
+  getAllQuestions: (payload) =>
+    customAxios.get(`/?page=${payload.page}&page_size=${payload.page_size}`),
 
   // Post requests
   postAnswer: (payload) => customAxios.post("/", payload),
