@@ -8,9 +8,8 @@ import {
   TextField,
 } from "@mui/material";
 import { useState } from "react";
-import { useMutation } from "react-query";
 import { API } from "../../services/api";
-import { toast } from "react-toastify";
+import useRequests from "../../hooks/useRequests";
 
 const EditAnswer = ({ open, data, handleClose, refetch }) => {
   const [editData, setEditData] = useState({
@@ -19,18 +18,11 @@ const EditAnswer = ({ open, data, handleClose, refetch }) => {
     question: data?.question,
   });
 
-  const { mutate } = useMutation(async (data) => await API.updateAnswer(data), {
-    onSuccess: () => {
-      refetch();
-      toast.success("Savol muvaffaqiyatli yangilandi.");
-    },
-    onError: () => {
-      toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
-    },
-  });
+  // Here update question
+  const { updateMutate } = useRequests({ url: API.updateAnswer, refetch });
 
   const handleSubmit = () => {
-    mutate(editData);
+    updateMutate(editData);
     handleClose();
   };
 

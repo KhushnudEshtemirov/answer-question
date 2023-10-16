@@ -21,6 +21,7 @@ import "./index.scss";
 import { API } from "../../services/api";
 import EditAnswer from "../../components/editAnswer/EditAnswer";
 import AddAnswer from "../../components/addAnswer/AddAnswer";
+import useRequests from "../../hooks/useRequests";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -51,11 +52,13 @@ const HomePage = () => {
 
   const page_size = 10; // page_size is number of items in every request
 
+  // Here get first ${page_size} questions
   const { isLoading, data, refetch } = useQuery(
     ["getAnswers", page, page_size],
     async () => await API.getAllQuestions({ page, page_size })
   );
 
+  // Here search question
   const { mutate: searchMutate } = useMutation(
     async (search) => await API.searchQuestion(search),
     {
@@ -71,18 +74,11 @@ const HomePage = () => {
     }
   );
 
-  const { mutate: deleteMutate } = useMutation(
-    async (id) => await API.deleteAnswer(id),
-    {
-      onSuccess: () => {
-        refetch();
-        toast.success("Savol muvaffaqiyatli o'chirildi.");
-      },
-      onError: () => {
-        toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
-      },
-    }
-  );
+  // Here delete question
+  const { deleteMutate } = useRequests({
+    url: API.deleteAnswer,
+    refetch,
+  });
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -123,7 +119,7 @@ const HomePage = () => {
   }, []);
 
   if (isLoading) {
-    return <p className="loading">Loading...</p>;
+    return <p className="loading">Yuklanmoqda...</p>;
   }
 
   const allData = data.data.results;
@@ -143,6 +139,7 @@ const HomePage = () => {
           id="combo-box-demo"
           options={searchData}
           sx={{ width: "50%" }}
+          noOptionsText="Savol topilmadi"
           renderInput={(params) => (
             <TextField
               {...params}
